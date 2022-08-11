@@ -2,6 +2,7 @@ import * as React from 'react';
 import { css } from '../../../../stitches.config';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import * as Dialog from '@radix-ui/react-dialog';
+import root from 'react-shadow';
 import { SIDE_OPTIONS, ALIGN_OPTIONS } from '@radix-ui/react-popper';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { foodGroups } from '../../../../test-data/foods';
@@ -187,7 +188,7 @@ export const Modality = () => {
   );
 };
 
-export const Submenus = () => {
+export const Submenus = ({ portalContainer }: { portalContainer: HTMLElement | null }) => {
   const [rtl, setRtl] = React.useState(false);
   return (
     <div
@@ -204,7 +205,7 @@ export const Submenus = () => {
         </label>
         <DropdownMenu.Root dir={rtl ? 'rtl' : 'ltr'}>
           <DropdownMenu.Trigger className={triggerClass()}>Open</DropdownMenu.Trigger>
-          <DropdownMenu.Portal>
+          <DropdownMenu.Portal container={portalContainer}>
             <DropdownMenu.Content className={contentClass()} sideOffset={5}>
               <DropdownMenu.Item className={itemClass()} onSelect={() => console.log('new-tab')}>
                 New Tab
@@ -217,7 +218,7 @@ export const Submenus = () => {
                 <DropdownMenu.SubTrigger className={subTriggerClass()}>
                   Bookmarks →
                 </DropdownMenu.SubTrigger>
-                <DropdownMenu.Portal>
+                <DropdownMenu.Portal container={portalContainer}>
                   <DropdownMenu.SubContent
                     className={contentClass()}
                     sideOffset={12}
@@ -240,7 +241,7 @@ export const Submenus = () => {
                       <DropdownMenu.SubTrigger className={subTriggerClass()}>
                         WorkOS →
                       </DropdownMenu.SubTrigger>
-                      <DropdownMenu.Portal>
+                      <DropdownMenu.Portal container={portalContainer}>
                         <DropdownMenu.SubContent
                           className={contentClass()}
                           sideOffset={12}
@@ -283,7 +284,7 @@ export const Submenus = () => {
                 <DropdownMenu.SubTrigger className={subTriggerClass()} disabled>
                   History →
                 </DropdownMenu.SubTrigger>
-                <DropdownMenu.Portal>
+                <DropdownMenu.Portal container={portalContainer}>
                   <DropdownMenu.SubContent
                     className={contentClass()}
                     sideOffset={12}
@@ -315,7 +316,7 @@ export const Submenus = () => {
                 <DropdownMenu.SubTrigger className={subTriggerClass()}>
                   Tools →
                 </DropdownMenu.SubTrigger>
-                <DropdownMenu.Portal>
+                <DropdownMenu.Portal container={portalContainer}>
                   <DropdownMenu.SubContent
                     className={contentClass()}
                     sideOffset={12}
@@ -363,6 +364,31 @@ export const Submenus = () => {
         </DropdownMenu.Root>
       </div>
     </div>
+  );
+};
+
+export const InShadowRoot = () => {
+  const [portalContainer, setPortalContainer] = React.useState<HTMLDivElement | null>(null);
+
+  return (
+    <root.div id="shadow-test-container">
+      <div>
+        <div ref={setPortalContainer}></div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100vh',
+            flexDirection: 'column',
+          }}
+        >
+          <h1>Rendered within a Shadow DOM</h1>
+          <p>Note: Stitches does not support Shadow DOM, so this will be unstyled.</p>
+          <Submenus portalContainer={portalContainer} />
+        </div>
+      </div>
+    </root.div>
   );
 };
 
