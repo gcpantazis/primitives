@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { clamp } from '@radix-ui/number';
-import { composeEventHandlers } from '@radix-ui/primitive';
+import { composeEventHandlers, getActiveElement } from '@radix-ui/primitive';
 import { createCollection } from '@radix-ui/react-collection';
 import { useComposedRefs } from '@radix-ui/react-compose-refs';
 import { createContextScope } from '@radix-ui/react-context';
@@ -472,7 +472,7 @@ const SelectContentImpl = React.forwardRef<SelectContentImplElement, SelectConte
         const [firstItem, ...restItems] = getItems().map((item) => item.ref.current);
         const [lastItem] = restItems.slice(-1);
 
-        const PREVIOUSLY_FOCUSED_ELEMENT = document.activeElement;
+        const PREVIOUSLY_FOCUSED_ELEMENT = getActiveElement();
         for (const candidate of candidates) {
           // if focus is already where we want to go, we don't want to keep going through the candidates
           if (candidate === PREVIOUSLY_FOCUSED_ELEMENT) return;
@@ -481,7 +481,7 @@ const SelectContentImpl = React.forwardRef<SelectContentImplElement, SelectConte
           if (candidate === firstItem && viewport) viewport.scrollTop = 0;
           if (candidate === lastItem && viewport) viewport.scrollTop = viewport.scrollHeight;
           candidate?.focus();
-          if (document.activeElement !== PREVIOUSLY_FOCUSED_ELEMENT) return;
+          if (getActiveElement() !== PREVIOUSLY_FOCUSED_ELEMENT) return;
         }
       },
       [getItems, viewport]
@@ -694,7 +694,7 @@ const SelectContentImpl = React.forwardRef<SelectContentImplElement, SelectConte
 
     const [searchRef, handleTypeaheadSearch] = useTypeaheadSearch((search) => {
       const enabledItems = getItems().filter((item) => !item.disabled);
-      const currentItem = enabledItems.find((item) => item.ref.current === document.activeElement);
+      const currentItem = enabledItems.find((item) => item.ref.current === getActiveElement());
       const nextItem = findNextItem(enabledItems, search, currentItem);
       if (nextItem) {
         /**
@@ -1045,7 +1045,7 @@ const SelectItem = React.forwardRef<SelectItemElement, SelectItemProps>(
               }
             })}
             onPointerLeave={composeEventHandlers(itemProps.onPointerLeave, (event) => {
-              if (event.currentTarget === document.activeElement) {
+              if (event.currentTarget === getActiveElement()) {
                 contentContext.onItemLeave?.();
               }
             })}
@@ -1267,7 +1267,7 @@ const SelectScrollButtonImpl = React.forwardRef<
   // the viewport, potentially causing the active item to now be partially out of view.
   // We re-run the `scrollIntoView` logic to make sure it stays within the viewport.
   useLayoutEffect(() => {
-    const activeItem = getItems().find((item) => item.ref.current === document.activeElement);
+    const activeItem = getItems().find((item) => item.ref.current === getActiveElement());
     activeItem?.ref.current?.scrollIntoView({ block: 'nearest' });
   }, [getItems]);
 

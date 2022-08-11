@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { composeEventHandlers } from '@radix-ui/primitive';
+import { composeEventHandlers, getActiveElement } from '@radix-ui/primitive';
 import { useComposedRefs } from '@radix-ui/react-compose-refs';
 import { createCollection } from '@radix-ui/react-collection';
 import { createContextScope } from '@radix-ui/react-context';
@@ -232,7 +232,7 @@ const ToastViewport = React.forwardRef<ToastViewportElement, ToastViewportProps>
           const isTabKey = event.key === 'Tab' && !isMetaKey;
 
           if (isTabKey) {
-            const focusedElement = document.activeElement;
+            const focusedElement = getActiveElement();
             const isTabbingBackwards = event.shiftKey;
             const targetIsViewport = event.target === viewport;
 
@@ -475,7 +475,7 @@ const ToastImpl = React.forwardRef<ToastImplElement, ToastImplProps>(
     const handleClose = useCallbackRef(() => {
       // focus viewport if focus is within toast to read the remaining toast
       // count to SR users and ensure focus isn't lost
-      const isFocusInToast = ref.current?.contains(document.activeElement);
+      const isFocusInToast = ref.current?.contains(getActiveElement());
       if (isFocusInToast) context.viewport?.focus();
       onClose();
     });
@@ -907,12 +907,12 @@ function getTabbableCandidates(container: HTMLElement) {
 }
 
 function focusFirst(candidates: HTMLElement[]) {
-  const previouslyFocusedElement = document.activeElement;
+  const previouslyFocusedElement = getActiveElement();
   return candidates.some((candidate) => {
     // if focus is already where we want to go, we don't want to keep going through the candidates
     if (candidate === previouslyFocusedElement) return true;
     candidate.focus();
-    return document.activeElement !== previouslyFocusedElement;
+    return getActiveElement() !== previouslyFocusedElement;
   });
 }
 

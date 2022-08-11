@@ -4,6 +4,7 @@ import { Primitive } from '@radix-ui/react-primitive';
 import { useCallbackRef } from '@radix-ui/react-use-callback-ref';
 
 import type * as Radix from '@radix-ui/react-primitive';
+import { getActiveElement } from '@radix-ui/primitive';
 
 const AUTOFOCUS_ON_MOUNT = 'focusScope.autoFocusOnMount';
 const AUTOFOCUS_ON_UNMOUNT = 'focusScope.autoFocusOnUnmount';
@@ -103,7 +104,7 @@ const FocusScope = React.forwardRef<FocusScopeElement, FocusScopeProps>((props, 
   React.useEffect(() => {
     if (container) {
       focusScopesStack.add(focusScope);
-      const previouslyFocusedElement = document.activeElement as HTMLElement | null;
+      const previouslyFocusedElement = getActiveElement() as HTMLElement | null;
       const hasFocusedCandidate = container.contains(previouslyFocusedElement);
 
       if (!hasFocusedCandidate) {
@@ -112,7 +113,7 @@ const FocusScope = React.forwardRef<FocusScopeElement, FocusScopeProps>((props, 
         container.dispatchEvent(mountEvent);
         if (!mountEvent.defaultPrevented) {
           focusFirst(removeLinks(getTabbableCandidates(container)), { select: true });
-          if (document.activeElement === previouslyFocusedElement) {
+          if (getActiveElement() === previouslyFocusedElement) {
             focus(container);
           }
         }
@@ -147,7 +148,7 @@ const FocusScope = React.forwardRef<FocusScopeElement, FocusScopeProps>((props, 
       if (focusScope.paused) return;
 
       const isTabKey = event.key === 'Tab' && !event.altKey && !event.ctrlKey && !event.metaKey;
-      const focusedElement = document.activeElement as HTMLElement | null;
+      const focusedElement = getActiveElement() as HTMLElement | null;
 
       if (isTabKey && focusedElement) {
         const container = event.currentTarget as HTMLElement;
@@ -187,10 +188,10 @@ FocusScope.displayName = FOCUS_SCOPE_NAME;
  * Stops when focus has actually moved.
  */
 function focusFirst(candidates: HTMLElement[], { select = false } = {}) {
-  const previouslyFocusedElement = document.activeElement;
+  const previouslyFocusedElement = getActiveElement();
   for (const candidate of candidates) {
     focus(candidate, { select });
-    if (document.activeElement !== previouslyFocusedElement) return;
+    if (getActiveElement() !== previouslyFocusedElement) return;
   }
 }
 
@@ -261,7 +262,7 @@ function isSelectableInput(element: any): element is FocusableTarget & { select:
 function focus(element?: FocusableTarget | null, { select = false } = {}) {
   // only focus if that element is focusable
   if (element && element.focus) {
-    const previouslyFocusedElement = document.activeElement;
+    const previouslyFocusedElement = getActiveElement();
     // NOTE: we prevent scrolling on focus, to minimize jarring transitions for users
     element.focus({ preventScroll: true });
     // only select if its not the same element, it supports selection and we need to select
