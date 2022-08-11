@@ -120,22 +120,21 @@ function generateTestCases(useShadowDom: boolean) {
 
         it('should open submenu and focus first item when pressing right arrow, enter or space key', () => {
           function shouldOpenOnKeydown(key: string) {
-            getCy(useShadowDom).findByText('Bookmarks →').trigger('keydown', { key });
-            getCy(useShadowDom)
-              .findByText('Inbox')
-              .should('be.focused')
-              .trigger('keydown', { key: 'ArrowLeft' });
+            getCy(useShadowDom).findByText('Bookmarks →').focus().realPress('Escape');
+            getCy(useShadowDom).findByText('Open').click();
+            getCy(useShadowDom).findByText('Bookmarks →').focus().realType(key);
+            getCy(useShadowDom).findByText('Inbox').should('be.visible').should('have.focus');
           }
 
           shouldOpenOnKeydown(' ');
-          shouldOpenOnKeydown('Enter');
-          shouldOpenOnKeydown('ArrowRight');
+          shouldOpenOnKeydown('{enter}');
+          shouldOpenOnKeydown('{rightarrow}');
         });
 
         it('should close only the focused submenu when pressing left arrow key', () => {
           getCy(useShadowDom).findByText('Bookmarks →').type('{enter}');
           getCy(useShadowDom).findByText('WorkOS →').type('{enter}');
-          getCy(useShadowDom).findByText('Stitches').type('{leftarrow}').should('not.exist');
+          getCy(useShadowDom).findByText('Stitches').realType('{leftarrow}').should('not.exist');
           getCy(useShadowDom).findByText('WorkOS →').should('be.visible');
           getCy(useShadowDom).findByText('New Window').should('be.visible');
         });
@@ -143,18 +142,18 @@ function generateTestCases(useShadowDom: boolean) {
         it('should focus first item when pressing right arrow key after opening submenu with mouse', () => {
           pointerOver('Bookmarks →');
           getCy(useShadowDom).findByText('Inbox').should('be.visible');
-          getCy(useShadowDom).findByText('Bookmarks →').type('{rightarrow}');
+          getCy(useShadowDom).findByText('Bookmarks →').realType('{rightarrow}');
           getCy(useShadowDom).findByText('Inbox').should('be.focused');
         });
 
         it('should close all menus when pressing escape, enter or space key on any item', () => {
           // Test close on root menu
-          getCy(useShadowDom).findByText('New Window').type('{esc}').should('not.exist');
+          getCy(useShadowDom).findByText('New Window').realType('{esc}').should('not.exist');
 
           // Reopen menu and test keys from within the submenu
           getCy(useShadowDom).findByText('Open').click();
           getCy(useShadowDom).findByText('Bookmarks →').type('{enter}');
-          getCy(useShadowDom).findByText('Inbox').type('{esc}').should('not.exist');
+          getCy(useShadowDom).findByText('Inbox').realType('{esc}').should('not.exist');
           getCy(useShadowDom).findByText('New Window').should('not.exist');
         });
 
@@ -162,11 +161,11 @@ function generateTestCases(useShadowDom: boolean) {
           // Matching items outside of the active menu should not become focused
           pointerOver('Bookmarks →');
           pointerOver('WorkOS →');
-          getCy(useShadowDom).findByText('Stitches').focus().type('Inbox');
+          getCy(useShadowDom).findByText('Stitches').focus().realType('Inbox');
           getCy(useShadowDom).findByText('Inbox').should('not.have.focus');
 
           // Matching items inside of active menu should become focused
-          pointerOver('Notion').focus().type('Inbox');
+          pointerOver('Notion').focus().realType('Inbox');
           getCy(useShadowDom).findByText('Inbox').should('have.focus');
         });
       });
@@ -219,11 +218,7 @@ function generateTestCases(useShadowDom: boolean) {
 
         it('should open submenu and focus first item when pressing left arrow key but close when pressing right arrow key', () => {
           getCy(useShadowDom).findByText('Bookmarks →').trigger('keydown', { key: 'ArrowLeft' });
-          getCy(useShadowDom)
-            .findByText('Inbox')
-            .should('be.focused')
-            .trigger('keydown', { key: 'ArrowRight' })
-            .and('not.exist');
+          getCy(useShadowDom).findByText('Inbox').realType('{rightarrow}').should('not.exist');
 
           // Root level menu should remain open
           getCy(useShadowDom).findByText('New Tab').should('be.visible');
