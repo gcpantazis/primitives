@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { composeEventHandlers } from '@radix-ui/primitive';
+import { composeEventHandlers, getRootNodeForFocusEvents } from '@radix-ui/primitive';
 import { Primitive, dispatchDiscreteCustomEvent } from '@radix-ui/react-primitive';
 import { useComposedRefs } from '@radix-ui/react-compose-refs';
 import { useCallbackRef } from '@radix-ui/react-use-callback-ref';
@@ -91,13 +91,16 @@ const DismissableLayer = React.forwardRef<DismissableLayerElement, DismissableLa
       if (!event.defaultPrevented) onDismiss?.();
     });
 
-    const focusOutside = useFocusOutside((event) => {
-      const target = event.target as HTMLElement;
-      const isFocusInBranch = [...context.branches].some((branch) => branch.contains(target));
-      if (isFocusInBranch) return;
-      onFocusOutside?.(event);
-      onInteractOutside?.(event);
-      if (!event.defaultPrevented) onDismiss?.();
+    const focusOutside = useFocusOutside({
+      callback: (event) => {
+        const target = event.target as HTMLElement;
+        const isFocusInBranch = [...context.branches].some((branch) => branch.contains(target));
+        if (isFocusInBranch) return;
+        onFocusOutside?.(event);
+        onInteractOutside?.(event);
+        if (!event.defaultPrevented) onDismiss?.();
+      },
+      layers: context.layers,
     });
 
     useEscapeKeydown((event) => {
@@ -293,12 +296,18 @@ function usePointerDownOutside(onPointerDownOutside?: (event: PointerDownOutside
  * Listens for when focus happens outside a react subtree.
  * Returns props to pass to the root (node) of the subtree we want to check.
  */
-function useFocusOutside(onFocusOutside?: (event: FocusOutsideEvent) => void) {
-  const handleFocusOutside = useCallbackRef(onFocusOutside) as EventListener;
+function useFocusOutside({
+  callback,
+  layers,
+}: {
+  callback: (event: FocusOutsideEvent) => void;
+  layers: Set<HTMLDivElement>;
+}) {
+  const handleFocusOutside = useCallbackRef(callback) as EventListener;
   const isFocusInsideReactTreeRef = React.useRef(false);
 
   React.useEffect(() => {
-    const handleFocus = (event: FocusEvent) => {
+    const handleFocus = (event: Event) => {
       if (event.target && !isFocusInsideReactTreeRef.current) {
         const eventDetail = { originalEvent: event };
         handleAndDispatchCustomEvent(FOCUS_OUTSIDE, handleFocusOutside, eventDetail, {
@@ -306,9 +315,15 @@ function useFocusOutside(onFocusOutside?: (event: FocusOutsideEvent) => void) {
         });
       }
     };
-    document.addEventListener('focusin', handleFocus);
-    return () => document.removeEventListener('focusin', handleFocus);
-  }, [handleFocusOutside]);
+
+    // All layers are rendered within the same root, so we take the first
+    // to determine the root node.
+    const firstLayer = layers.values().next().value;
+    const rootNode = getRootNodeForFocusEvents(firstLayer);
+
+    rootNode.addEventListener('focusin', handleFocus);
+    return () => rootNode.removeEventListener('focusin', handleFocus);
+  }, [handleFocusOutside, layers]);
 
   return {
     onFocusCapture: () => (isFocusInsideReactTreeRef.current = true),

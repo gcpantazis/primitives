@@ -206,7 +206,10 @@ export const Submenus = ({ portalContainer }: { portalContainer: HTMLElement | n
         <DropdownMenu.Root dir={rtl ? 'rtl' : 'ltr'}>
           <DropdownMenu.Trigger className={triggerClass()}>Open</DropdownMenu.Trigger>
           <DropdownMenu.Portal container={portalContainer}>
-            <DropdownMenu.Content className={contentClass()} sideOffset={5}>
+            <DropdownMenu.Content
+              className={[contentClass(), 'dropdown-content'].join(' ')}
+              sideOffset={5}
+            >
               <DropdownMenu.Item className={itemClass()} onSelect={() => console.log('new-tab')}>
                 New Tab
               </DropdownMenu.Item>
@@ -220,7 +223,7 @@ export const Submenus = ({ portalContainer }: { portalContainer: HTMLElement | n
                 </DropdownMenu.SubTrigger>
                 <DropdownMenu.Portal container={portalContainer}>
                   <DropdownMenu.SubContent
-                    className={contentClass()}
+                    className={[contentClass(), 'dropdown-content'].join(' ')}
                     sideOffset={12}
                     alignOffset={-6}
                   >
@@ -243,7 +246,7 @@ export const Submenus = ({ portalContainer }: { portalContainer: HTMLElement | n
                       </DropdownMenu.SubTrigger>
                       <DropdownMenu.Portal container={portalContainer}>
                         <DropdownMenu.SubContent
-                          className={contentClass()}
+                          className={[contentClass(), 'dropdown-content'].join(' ')}
                           sideOffset={12}
                           alignOffset={-6}
                         >
@@ -286,7 +289,7 @@ export const Submenus = ({ portalContainer }: { portalContainer: HTMLElement | n
                 </DropdownMenu.SubTrigger>
                 <DropdownMenu.Portal container={portalContainer}>
                   <DropdownMenu.SubContent
-                    className={contentClass()}
+                    className={[contentClass(), 'dropdown-content'].join(' ')}
                     sideOffset={12}
                     alignOffset={-6}
                   >
@@ -318,7 +321,7 @@ export const Submenus = ({ portalContainer }: { portalContainer: HTMLElement | n
                 </DropdownMenu.SubTrigger>
                 <DropdownMenu.Portal container={portalContainer}>
                   <DropdownMenu.SubContent
-                    className={contentClass()}
+                    className={[contentClass(), 'dropdown-content'].join(' ')}
                     sideOffset={12}
                     alignOffset={-6}
                   >
@@ -373,6 +376,21 @@ export const InShadowRoot = () => {
   return (
     <root.div id="shadow-test-container">
       <div>
+        {/** Basic styles, since Stitches doesn't work within a Shadow DOM.
+         * See: https://github.com/stitchesjs/stitches/issues/628
+         */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              .dropdown-content {
+                background-color: #fff;
+                border-radius: 4px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                padding: 16px;
+              }
+            `,
+          }}
+        ></style>
         <div ref={setPortalContainer}></div>
         <div
           style={{
@@ -384,7 +402,6 @@ export const InShadowRoot = () => {
           }}
         >
           <h1>Rendered within a Shadow DOM</h1>
-          <p>Note: Stitches does not support Shadow DOM, so this will be unstyled.</p>
           <Submenus portalContainer={portalContainer} />
         </div>
       </div>
