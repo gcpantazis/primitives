@@ -100,7 +100,7 @@ const DismissableLayer = React.forwardRef<DismissableLayerElement, DismissableLa
         onInteractOutside?.(event);
         if (!event.defaultPrevented) onDismiss?.();
       },
-      layers: context.layers,
+      layers,
     });
 
     useEscapeKeydown((event) => {
@@ -301,7 +301,7 @@ function useFocusOutside({
   layers,
 }: {
   callback: (event: FocusOutsideEvent) => void;
-  layers: Set<HTMLDivElement>;
+  layers: HTMLDivElement[];
 }) {
   const handleFocusOutside = useCallbackRef(callback) as EventListener;
   const isFocusInsideReactTreeRef = React.useRef(false);
@@ -318,8 +318,7 @@ function useFocusOutside({
 
     // All layers are rendered within the same root, so we take the first
     // to determine the root node.
-    const firstLayer = layers.values().next().value;
-    const rootNode = getRootNodeForFocusEvents(firstLayer);
+    const rootNode = getRootNodeForFocusEvents(layers[0]);
 
     rootNode.addEventListener('focusin', handleFocus);
     return () => rootNode.removeEventListener('focusin', handleFocus);
